@@ -8,15 +8,15 @@
  
     <?php
     
-        $won = false;
+        $won = false; // deklarace proměnných, které budeme používat globálně
         $letters = " ";
         $tries = 0;
         $triesCount = "";
         $win = "";
         $triesDiv = "";
         $panel="";
-        parseTries();
-    
+        parseTries(); // zavolání metody parseTries()
+	//toto celé kontroluje, jaké bylo zmáčknuto tlačítko na klávesnici a následně volá metodu, která porovná, zda se vyskytuje ve slově, které hádáme    
         if(isset($_POST['a'])) { 
 			IsInWord("a");
 		} 
@@ -95,13 +95,14 @@
 		else if(array_key_exists('z', $_POST)) { 
 			IsInWord("z"); 
 		}
-		
-		 if(array_key_exists('newg', $_POST)) { 
+
+		// pokud se zmáčkne tlačítko "nová hra", tak se vybere nové slovo (zavolá se metoda selectWord)
+		if(array_key_exists('newg', $_POST)) { 
 		        selectWord(); 
 		    }
-		
+	//zde se zavolá metoda fillLetters(), které naplní políčko pro slovo správným počtem volných pozic	
         fillLetters();
-		
+		// pokud uživatel vyhraje, tak se vše vyresetuje a vyskočí div s výherním textem
 		if($won){
 		    file_put_contents('letterFile.txt', '');
 		    file_put_contents('tries.txt', '12');
@@ -111,7 +112,7 @@
             <button class=\"newGame\" name=\"newg\">Nová hra?</button>
             </form>";
 		}
-		
+		// pokud uživatel vyhraje, tak se vše vyresetuje a vyskočí div s nevýherním textem
 		if ($tries == 0) {
 		    file_put_contents('letterFile.txt', '');
 		    file_put_contents('tries.txt', '12');
@@ -125,22 +126,22 @@
             fclose($curr);
 		}
 		
-		function selectWord() {
+		function selectWord() { //zde se vybere slovo ze souboru words.txt a následně se zapíše do souboru current.txt
 		    $word;
 		    $wordsFile = fopen("words.txt", "r");
-            $randomNum = rand(1,22);
+            	    $randomNum = rand(1,22);
             
-            for ($i = 1; $i <= $randomNum; $i++) {
-                $word = fgets($wordsFile);
-            }
+            	    for ($i = 1; $i <= $randomNum; $i++) {
+                	$word = fgets($wordsFile);
+                    }
             
-            $currWordFile = fopen("current.txt", "w");
-            fwrite($currWordFile, trim($word,"\n"));
-            fclose($wordsFile);
-            fclose($currWordFile);
+          	    $currWordFile = fopen("current.txt", "w");
+           	    fwrite($currWordFile, trim($word,"\n"));
+          	    fclose($wordsFile);
+           	    fclose($currWordFile);
 		}
 		
-		function isInWord($letter) {
+		function isInWord($letter) { //zde porovnáme, zda je stisknuté tlačítko ve slově, které hádáme - pokud ano, tak se zapíše do souboru letterFile.txt, pokud ne, tak se odečítají pokusy
 		    global $tries;
 		    $word = fopen("current.txt", "r");
 		    $letterFile = fopen("letterFile.txt", "r+");
@@ -164,40 +165,42 @@
 		}
 		
 
-		function fillLetters(){
+		function fillLetters(){ //zde porovnáme, zda je písmenko na pozici stejné, jako je pozice ve slově a následně ho dáme tam, kde má být (zde se pracuje jen s uhodnutými písmeny)
 		    global $letters;
 		    $wordFile = fopen("current.txt", "r");
 		    $word = fgets($wordFile);
 		    $wordLength = strlen($word);
 		    fclose($wordFile);
 		    
-            $letterFile = fopen("letterFile.txt", "r");
-            $letter = fgets($letterFile);
-            fclose($letterFile);
+           	    $letterFile = fopen("letterFile.txt", "r");
+            	    $letter = fgets($letterFile);
+            	    fclose($letterFile);
             
-            $howMany = 0;
-            for($i = 0; $i < $wordLength; $i++) {
-                if(substr_count($letter, $word[$i])){
-                    $letters = $letters . "<div class = \"letter\">". $word[$i] ."</div>";
-                    $howMany = $howMany + 1;
-                } 
-                else {
-                    $letters = $letters . "<div class = \"letter\"></div>";
-                } 
+           	    $howMany = 0;
+            	    for($i = 0; $i < $wordLength; $i++) {
+                	if(substr_count($letter, $word[$i])){
+                    	   $letters = $letters . "<div class = \"letter\">". $word[$i] ."</div>";
+                    	   $howMany = $howMany + 1;
+        	    	} 
+                        else {
+                    	   $letters = $letters . "<div class = \"letter\"></div>";
+                        } 
                      
-            }
-            if($howMany == $wordLength){
-                global $won;
-                $won = true;
-            }     
+                    }
+             		
+		    if($howMany == $wordLength){ //pokud se počet vyplněných písmen rovná délce slova, tak se bool won nastaví na true - uživatel vyhrál
+                    	global $won;
+                    	$won = true;
+            	    }     
 		}
-		function parseTries(){
+
+		function parseTries(){ // zde se načítají pokusy
 		    global $tries;
 		    $triesFile = fopen("tries.txt", "r") or die("tries");
 		    $tries = intval(fgets($triesFile));
 		    fclose($triesFile);
 		}
-		
+	//pak následují již jen css styly a html
     ?>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700&display=swap');
